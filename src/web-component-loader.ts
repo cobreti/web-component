@@ -18,18 +18,13 @@ export class WebComponentLoader {
     }
 
     async loadWebComponentsFromDirectory(webComponentsDirectory: WebComponentsDirectory) {
-        try {
-            const promises:Promise<void>[] = [];
+        const promises:Promise<void>[] = [];
 
-            webComponentsDirectory.forEach(entry => {
-                promises.push(this.addWebComponentToDOM(entry));
-            });
+        webComponentsDirectory.forEach(entry => {
+            promises.push(this.addWebComponentToDOM(entry));
+        });
 
-            await Promise.all(promises);
-        }
-        catch (error) {
-            console.error(error);
-        }
+        await Promise.all(promises);
     }
 
     async fetchWebComponentsDirectory(locationUrl: string) : Promise<WebComponentsDirectory | null> {
@@ -38,13 +33,11 @@ export class WebComponentLoader {
             const response = await fetch(locationUrl);
 
             if (!response.ok) {
-                throw new Error(`failure fetching web components location from ${locationUrl}`);
+                return null;
             }
 
-            const text  = await response.text();
-            const content = JSON.parse(text) as WebComponentsDirectory;
-
-            return content;
+            const text = await response.text();
+            return JSON.parse(text) as WebComponentsDirectory;
         }
         catch (error) {
             console.error(error);
@@ -54,29 +47,24 @@ export class WebComponentLoader {
     }
 
     addWebComponentToDOM(entry: WebComponentEntry): Promise<void> {
-        return new Promise<void>( (resolve, reject) => {
-            try {
-                const existingElm = document.getElementById(entry.name);
+        return new Promise<void>( (resolve) => {
+            const existingElm = document.getElementById(entry.name);
 
-                if (!existingElm) {
-                    console.log(`loading web-component '${entry.name}' --> ${entry.url}`);
-                    const scriptElem = document.createElement('script');
-                    scriptElem.type = 'module';
-                    scriptElem.id = entry.name;
-                    scriptElem.src = entry.url;
-                    scriptElem.async = true;
-                    scriptElem.onload = () => {
-                        console.log('script parsed');
-                        resolve();
-                    }
-                    document.head.append(scriptElem);
-                } else {
+            if (!existingElm) {
+                console.log(`loading web-component '${entry.name}' --> ${entry.url}`);
+                const scriptElem = document.createElement('script');
+                scriptElem.type = 'module';
+                scriptElem.id = entry.name;
+                scriptElem.src = entry.url;
+                scriptElem.async = true;
+                scriptElem.onload = () => {
+                    console.log('script parsed');
                     resolve();
-                    console.log(`web-component '${entry.name}' already loaded`);
                 }
-            } catch (error) {
-                console.error(error);
-                reject();
+                document.head.append(scriptElem);
+            } else {
+                console.log(`web-component '${entry.name}' already loaded`);
+                resolve();
             }
         });
     }

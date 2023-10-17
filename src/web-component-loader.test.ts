@@ -48,16 +48,12 @@ describe('WebComponentLoader test', async() => {
             }
         });
 
-        const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
-
         global.fetch = fetchFct;
 
         const webComponentLoader = new WebComponentLoader();
         const content = await webComponentLoader.fetchWebComponentsDirectory('/web-component.json');
 
         expect(content).toBeNull();
-        expect(consoleErrorSpy).toBeCalledTimes(1);
-
     })
 
 
@@ -111,6 +107,74 @@ describe('WebComponentLoader test', async() => {
         if (scriptElm) {
             expect(scriptElm.src).toEqual(wcEntry.url);
         }
+    });
+
+    test('addWebComponentToDOM does not add script if already present', async() => {
+        const wcEntry : WebComponentEntry = {
+            name: 'testwc',
+            url: 'http://server/file'
+        }
+
+        const scriptElm = global.document.createElement('script');
+        scriptElm.id = wcEntry.name;
+        global.document.head.append(scriptElm);
+
+        const appendSpy = vi.spyOn(global.document, 'append');
+
+        const webComponentLoader = new WebComponentLoader();
+        await webComponentLoader.addWebComponentToDOM(wcEntry);
+
+        expect(appendSpy).not.toBeCalled();
+    });
+
+    test('loadWebComponentsWithDirectoryUrl with valid directory', async() => {
+        const loader = new WebComponentLoader();
+        const wcDirectory : WebComponentsDirectory = [];
+
+        vi.spyOn(loader, 'fetchWebComponentsDirectory').mockImplementation(async () => {
+            return wcDirectory;
+        });
+
+        const loadSpy = vi.spyOn(loader, 'loadWebComponentsFromDirectory').mockImplementation(async () => {});
+
+        await loader.loadWebComponentsWithDirectoryUrl('url');
+
+        expect(loadSpy).toBeCalled();
+    });
+
+    test('loadWebComponentsWithDirectoryUrl invalid directory result will log an error', async() => {
+        const loader = new WebComponentLoader();
+
+        vi.spyOn(loader, 'fetchWebComponentsDirectory').mockImplementation(async () => {
+            return null;
+        });
+
+        const logErrorSpy = vi.spyOn(console, 'error');
+
+        await loader.loadWebComponentsWithDirectoryUrl('url');
+
+        expect(logErrorSpy).toBeCalled();
+    });
+
+    test('loadWebComponentsFromDirectory add web component to DOM for each entry', async() => {
+        const wcDirectory : WebComponentsDirectory = [
+            {
+                name: 'entry 1',
+                url: 'url 1'
+            },
+            {
+                name: 'entry 2',
+                url: 'url 2'
+            }
+        ]
+
+        const loader = new WebComponentLoader();
+
+        const addWCSpy = vi.spyOn(loader, 'addWebComponentToDOM').mockImplementation(async() => {});
+
+        await loader.loadWebComponentsFromDirectory(wcDirectory);
+
+        expect(addWCSpy).toBeCalledTimes(wcDirectory.length);
     });
 
 });
