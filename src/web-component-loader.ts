@@ -32,7 +32,7 @@ export class WebComponentLoader {
         }
     }
 
-    private async fetchWebComponentsDirectory(locationUrl: string) : Promise<WebComponentsDirectory | null> {
+    async fetchWebComponentsDirectory(locationUrl: string) : Promise<WebComponentsDirectory | null> {
         try {
             console.log(`fetching web components location from ${locationUrl}`);
             const response = await fetch(locationUrl);
