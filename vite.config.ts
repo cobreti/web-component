@@ -15,9 +15,6 @@ export default defineConfig({
       name: "index",
       fileName: (format) => `index.${format}.js`,
     },
-    rollupOptions: {
-      external: ["react", "react-dom"],
-    },
   },
   plugins: [dts()]
 });

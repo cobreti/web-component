@@ -53,7 +53,7 @@ export class WebComponentLoader {
         return null;
     }
 
-    private addWebComponentToDOM(entry: WebComponentEntry): Promise<void> {
+    addWebComponentToDOM(entry: WebComponentEntry): Promise<void> {
         return new Promise<void>( (resolve, reject) => {
             try {
                 const existingElm = document.getElementById(entry.name);
