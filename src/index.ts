@@ -1,1 +1,2 @@
-export * from './web-component-loader.ts';
+export * from './web-component-loader';
+export * from './HTMLElementWithApi';
